@@ -17,10 +17,16 @@ constructor(row) {
 
 //CRUD
 
-static async insert({ brand, model, url }) {
+static async insert({ brand, model, url, applications }) {
   const { rows } = await pool.query(
     'INSERT INTO computers (brand, model, url) VALUES ($1, $2, $3) RETURNING *',
     [brand, model, url]
+  );
+
+  await pool.query(
+    `INSERT INTO computers_applications (computer_id, application_id)
+    SELECT ${rows[0].id}, id FROM applications WHERE name = ANY($1::brand[], $2::model[], $3::url[])`,
+    [applications]
   );
 
   return new Computer(rows[0]);
@@ -36,7 +42,17 @@ static async find() {
 //VERY PLAIN FINDBYID
 static async findById(id) {
   const { rows } = await pool.query(
-    'SELECT * FROM computers WHERE id=$1',
+    `SELECT 
+        computers.* 
+        array_agg(applications.name) AS applications
+    FROM 
+        computers_applications
+    JOIN computers
+    ON computers_applications.computer_id = computers.id
+    WHERE computers.id=$1
+    GROUP BY computers.id
+    `,
+    
     [id]
   );
   if(!rows[0]) throw new Error(`No computer with id ${id}`);
