@@ -3,20 +3,21 @@ const pool = require('../lib/utils/pool.js');
 module.exports = class Application {
 id;
 name;
-computer_id;
+// computer_id;
 
 constructor(row) {
-  this.id = Number(row.id);
+  this.id = String(row.id);
   this.name = row.name;
-  this.computerId = (row.computer_id);
+  // this.computerId = String(row.computer_id);
+ 
 }
 
 //CRUD
 
-static async insert({ name, computerId }) {
+static async insert({ name }) {
   const { rows } = await pool.query(
-    'INSERT INTO applications (name, computer_id) VALUES ($1, $2) RETURNING *',
-    [name, computerId]
+    'INSERT INTO applications (name) VALUES ($1) RETURNING *',
+    [name]
   );
 
   return new Application(rows[0]);
@@ -38,15 +39,14 @@ static async findById(id) {
   return new Application(rows[0]);
 }
 
-static async update(id, { name, computerId }) {
+static async update(id, { name }) {
   const { rows } = await pool.query(
     `UPDATE applications
-        SET name=$1,
-        computer_id=$2        
-    WHERE id=$3
+        SET name=$1
+    WHERE id=$2
     RETURNING *
     `,
-    [name, computerId, id]
+    [name, id]
   );
   if(!rows[0]) throw new Error(`No application with id ${id}`);
 

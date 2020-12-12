@@ -2,7 +2,8 @@ const fs = require('fs');
 const request = require('supertest');
 const app = require('../lib/utils/app.js');
 const pool = require('../lib/utils/pool.js');
-const Computer = require('.././models/Computer');
+const Computer = require('../models/Computer');
+const Application = require('../models/Application.js');
 
 
 
@@ -39,19 +40,30 @@ describe('app tests', () => {
 
     expect(res.body).toEqual(res.body);
   });
+
   //GET BY ID TEST
-  it('finds computers from table by ID with GET', async() => {
-    const computer = await Computer.insert({ 
+  it('finds a computer with all associated applications by id via GET', async() => {
+    await Promise.all([
+      { name: 'Garageband' },
+      { name: 'VScode' }
+      
+    ].map(application => Application.insert(application)));
+
+    const computer = await Computer.insert({
       brand: 'Apple', 
       model: 'Macbook Pro',
-      url: 'apple.com'
+      url: 'apple.com',  
+      applications: ['Garageband', 'VScode']
     });
 
     const response = await request(app)
       .get(`/computers/${computer.id}`);
-
-    console.log(`/computers/${computer.id}`);
-    expect(response.body).toEqual(computer);
+    
+      console.log(response.body)
+    expect(response.body).toEqual({
+      ...computer,
+      applications: ['Garageband', 'VScode']
+    });
   });
 
   //PUT TEST

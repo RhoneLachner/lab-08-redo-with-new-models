@@ -8,16 +8,16 @@ model;
 url;
 
 constructor(row) {
-  this.id = row.id;
+  this.id = String(row.id);
   this.brand = row.brand;
   this.model = row.model;
   this.url = row.url;
-  this.computerId = (row.computer_id);
+  
 }
 
 //CRUD
 
-static async insert({ brand, model, url, applications }) {
+static async insert({ brand, model, url, applications = [] }) {
   const { rows } = await pool.query(
     'INSERT INTO computers (brand, model, url) VALUES ($1, $2, $3) RETURNING *',
     [brand, model, url]
@@ -25,7 +25,7 @@ static async insert({ brand, model, url, applications }) {
 
   await pool.query(
     `INSERT INTO computers_applications (computer_id, application_id)
-    SELECT ${rows[0].id}, id FROM applications WHERE name = ANY($1::brand[], $2::model[], $3::url[])`,
+    SELECT ${rows[0].id}, id FROM applications WHERE name = ANY($1::text[])`,
     [applications]
   );
 
@@ -39,17 +39,19 @@ static async find() {
 }
 
 
-//VERY PLAIN FINDBYID
+//FINDBYID
 static async findById(id) {
   const { rows } = await pool.query(
     `SELECT 
-        computers.* 
-        array_agg(applications.name) AS applications
+    computers.*,
+    array_agg(applications.name) AS applications
     FROM 
         computers_applications
     JOIN computers
     ON computers_applications.computer_id = computers.id
-    WHERE computers.id=$1
+    JOIN applications
+    ON computers_applications.application_id = applications.id
+    WHERE computers.id = $1
     GROUP BY computers.id
     `,
     
@@ -57,10 +59,14 @@ static async findById(id) {
   );
   if(!rows[0]) throw new Error(`No computer with id ${id}`);
     
-  return new Computer(rows[0]);
+  return {
+    ...new Computer(rows[0]),
+    
+    applications: rows[0].applications };
+
 }
 
-// //ADDING RATING JOIN HERE
+// //ADDING application JOIN HERE
 // static async findById(id) {
 //   const { rows } = await pool.query(
 //     `

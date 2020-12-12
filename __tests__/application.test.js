@@ -35,15 +35,16 @@ describe('app tests', () => {
     const res = await request(app)
       .post('/applications')
       .send({
-        name: 'Garageband',
-        computerId: 1    
+        // computerId: '1',
+        name: 'Garageband'
+            
       });
     
     console.log(res.body);
     expect(res.body).toEqual({
-      id: 1,
-      name: 'Garageband',
-      computerId: '1'   
+      id: '1',      
+      name: 'Garageband',   
+      // computerId: '1'
     });
   });
 
@@ -68,6 +69,29 @@ describe('app tests', () => {
     console.log(`/applications/${computer.id}`);
     expect(response.body).toEqual(application);
   });
+
+  // it('finds a computer with associated applications by id via GET', async() => {
+  //   await Promise.all([
+  //     { name: 'Garageband' },
+  //     { name: 'VScode' }
+      
+  //   ].map(application => Application.insert(application)));
+
+  //   const computer = await Computer.insert({
+  //     brand: 'Apple', 
+  //     model: 'Macbook Pro',
+  //     url: 'apple.com',  
+  //     applications: ['Garageband', 'VScode']
+  //   });
+
+  //   const response = await request(app)
+  //     .get(`/computers/${computer.id}`);
+    
+  //   expect(response.body).toEqual({
+  //     ...computer,
+  //     applications: ['Garageband', 'VScode']
+  //   });
+  // });
 
   // //GET BY ID WITH application TEST
   // it('finds a computer by id and associated applications via GET', async() => {
@@ -94,29 +118,31 @@ describe('app tests', () => {
   //PUT TEST
   it('updates applications from table by ID with PUT', async() => {
     const application = await Application.insert({ 
-      name: 5, 
-      computerId: 1,
+      name: 'Garageband', 
+      // computerId: 1,
     });
 
     const response = await request(app)
       .put(`/applications/${application.id}`)
       .send({
-        name: 'Garageband', 
-        computerId: '1',
+        name: 'GaragebandUPDATE', 
+        // computerId: '1',
       });
 
-    console.log(`/applications/${application.id}`);
+    console.log(response.body);
     expect(response.body).toEqual({
       ...application,
-      name: 'Garageband', 
-      computerId: '1',
+      name: 'GaragebandUPDATE', 
+      // computerId: '1',
     });
   });
+
   //DELETE TEST
   it('updates computers from table by ID with PUT', async() => {
     const application = await Application.insert({ 
       name: 'Garageband', 
-      computerId: '1', });
+      // computerId: '1',
+    });
 
     const response = await request(app)
       .delete(`/applications/${application.id}`);
