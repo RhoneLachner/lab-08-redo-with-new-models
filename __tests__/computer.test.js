@@ -59,7 +59,7 @@ describe('app tests', () => {
     const response = await request(app)
       .get(`/computers/${computer.id}`);
     
-      console.log(response.body)
+    // console.log(response.body)
     expect(response.body).toEqual({
       ...computer,
       applications: ['Garageband', 'VScode']
